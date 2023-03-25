@@ -96,6 +96,7 @@ class RCTVideo: UIView, RCTVideoPlayerViewControllerDelegate, RCTPlayerObserverH
     @objc var onVideoFullscreenPlayerDidPresent: RCTDirectEventBlock?
     @objc var onVideoFullscreenPlayerWillDismiss: RCTDirectEventBlock?
     @objc var onVideoFullscreenPlayerDidDismiss: RCTDirectEventBlock?
+    @objc var onVideoPlayerOrientationChange: RCTDirectEventBlock?
     @objc var onReadyForDisplay: RCTDirectEventBlock?
     @objc var onPlaybackStalled: RCTDirectEventBlock?
     @objc var onPlaybackResume: RCTDirectEventBlock?
@@ -629,8 +630,8 @@ class RCTVideo: UIView, RCTVideoPlayerViewControllerDelegate, RCTPlayerObserverH
             }
             if viewController != nil {
                 _presentingViewController = viewController
-
-                self.onVideoFullscreenPlayerWillPresent?(["target": reactTag as Any])
+                // Moved to RCTPlayerDelegate
+                // self.onVideoFullscreenPlayerWillPresent?(["target": reactTag as Any])
 
                 if let playerViewController = _playerViewController {
                     if(_controls) {
@@ -697,6 +698,7 @@ class RCTVideo: UIView, RCTVideoPlayerViewControllerDelegate, RCTPlayerObserverH
         viewController.showsPlaybackControls = self._controls
         viewController.rctDelegate = self
         viewController.preferredOrientation = _fullscreenOrientation
+        viewController.onVideoPlayerOrientationChange = self.onVideoPlayerOrientationChange
 
         viewController.view.frame = self.bounds
         viewController.player = player
@@ -734,7 +736,7 @@ class RCTVideo: UIView, RCTVideoPlayerViewControllerDelegate, RCTPlayerObserverH
                 self.removePlayerLayer()
                 self.usePlayerViewController()
                 if (_playerViewController !== nil) {
-                    _playerDelegate = RCTPlayerDelegate(self.onPictureInPictureStatusChanged)
+                    _playerDelegate = RCTPlayerDelegate(self.onPictureInPictureStatusChanged, self.onVideoFullscreenPlayerWillPresent, self.onVideoFullscreenPlayerWillDismiss)
                     _playerViewController!.delegate = _playerDelegate
                 }
             }
@@ -765,7 +767,8 @@ class RCTVideo: UIView, RCTVideoPlayerViewControllerDelegate, RCTPlayerObserverH
     func videoPlayerViewControllerWillDismiss(playerViewController:AVPlayerViewController) {
         if _playerViewController == playerViewController && _fullscreenPlayerPresented, let onVideoFullscreenPlayerWillDismiss = onVideoFullscreenPlayerWillDismiss {
             _playerObserver.removePlayerViewControllerObservers()
-            onVideoFullscreenPlayerWillDismiss(["target": reactTag as Any])
+            // Moved to RCTPlayerDelegate
+            // onVideoFullscreenPlayerWillDismiss(["target": reactTag as Any])
         }
     }
 
@@ -1081,14 +1084,11 @@ class RCTVideo: UIView, RCTVideoPlayerViewControllerDelegate, RCTPlayerObserverH
         if !oldRect!.equalTo(newRect!) {
             if newRect!.equalTo(UIScreen.main.bounds) {
                 NSLog("in fullscreen")
-                self.onVideoFullscreenPlayerWillPresent?(["target": self.reactTag])
-
 
                 self.reactViewController().view.frame = UIScreen.main.bounds
                 self.reactViewController().view.setNeedsLayout()
             } else {
                 NSLog("not fullscreen")
-                self.onVideoFullscreenPlayerWillDismiss?(["target": self.reactTag])
             }
         }
     }

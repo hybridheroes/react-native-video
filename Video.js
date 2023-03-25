@@ -1,11 +1,11 @@
-import React, { Component } from 'react';
+import { ImagePropTypes, ViewPropTypes } from 'deprecated-react-native-prop-types';
 import PropTypes from 'prop-types';
-import { StyleSheet, requireNativeComponent, NativeModules, UIManager, View, Image, Platform, findNodeHandle } from 'react-native';
-import { ViewPropTypes, ImagePropTypes } from 'deprecated-react-native-prop-types';
+import React, { Component } from 'react';
+import { findNodeHandle, Image, NativeModules, Platform, requireNativeComponent, StyleSheet, UIManager, View } from 'react-native';
 import resolveAssetSource from 'react-native/Libraries/Image/resolveAssetSource';
-import TextTrackType from './TextTrackType';
-import FilterType from './FilterType';
 import DRMType from './DRMType';
+import FilterType from './FilterType';
+import TextTrackType from './TextTrackType';
 import VideoResizeMode from './VideoResizeMode.js';
 
 const styles = StyleSheet.create({
@@ -15,7 +15,7 @@ const styles = StyleSheet.create({
 });
 
 const { VideoDecoderProperties } = NativeModules
-export { TextTrackType, FilterType, DRMType, VideoDecoderProperties }
+export { TextTrackType, FilterType, DRMType, VideoDecoderProperties };
 
 export default class Video extends Component {
 
@@ -77,7 +77,7 @@ export default class Video extends Component {
     this.setNativeProps({ fullscreen: false });
   };
 
-  save = async (options?) => {
+  save = async (options) => {
     return await NativeModules.VideoManager.save(options, findNodeHandle(this._root));
   }
 
@@ -186,6 +186,12 @@ export default class Video extends Component {
   _onFullscreenPlayerWillDismiss = (event) => {
     if (this.props.onFullscreenPlayerWillDismiss) {
       this.props.onFullscreenPlayerWillDismiss(event.nativeEvent);
+    }
+  };
+
+  _onOrientationChange = (event) => {
+    if (this.props.onOrientationChange) {
+      this.props.onOrientationChange(event.nativeEvent);
     }
   };
 
@@ -362,6 +368,7 @@ export default class Video extends Component {
       onVideoFullscreenPlayerDidPresent: this._onFullscreenPlayerDidPresent,
       onVideoFullscreenPlayerWillDismiss: this._onFullscreenPlayerWillDismiss,
       onVideoFullscreenPlayerDidDismiss: this._onFullscreenPlayerDidDismiss,
+      onVideoPlayerOrientationChange: this._onOrientationChange,
       onReadyForDisplay: this._onReadyForDisplay,
       onPlaybackStalled: this._onPlaybackStalled,
       onPlaybackResume: this._onPlaybackResume,
@@ -550,6 +557,7 @@ Video.propTypes = {
   onFullscreenPlayerDidPresent: PropTypes.func,
   onFullscreenPlayerWillDismiss: PropTypes.func,
   onFullscreenPlayerDidDismiss: PropTypes.func,
+  onOrientationChange: PropTypes.func,
   onReadyForDisplay: PropTypes.func,
   onPlaybackStalled: PropTypes.func,
   onPlaybackResume: PropTypes.func,
