@@ -18,10 +18,13 @@ class RCTVideoPlayerViewController: AVPlayerViewController {
         return false
     }
 
-    override func viewDidAppear(_ animated: Bool) {
-        super.viewDidAppear(animated)
-
+    override func viewDidLoad() {
+        super.viewDidLoad()
         NotificationCenter.default.addObserver(self, selector: #selector(deviceOrientationDidChange), name: UIDevice.orientationDidChangeNotification, object: nil)
+    }
+
+    deinit {
+        NotificationCenter.default.removeObserver(self, name: UIDevice.orientationDidChangeNotification, object: nil)
     }
 
     override func viewDidDisappear(_ animated: Bool) {
@@ -31,8 +34,6 @@ class RCTVideoPlayerViewController: AVPlayerViewController {
             rctDelegate.videoPlayerViewControllerWillDismiss(playerViewController: self)
             rctDelegate.videoPlayerViewControllerDidDismiss(playerViewController: self)
         }
-        
-        NotificationCenter.default.removeObserver(self, name: UIDevice.orientationDidChangeNotification, object: nil)
     }
 
     #if !TARGET_OS_TV
