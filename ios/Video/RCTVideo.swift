@@ -736,7 +736,7 @@ class RCTVideo: UIView, RCTVideoPlayerViewControllerDelegate, RCTPlayerObserverH
                 self.removePlayerLayer()
                 self.usePlayerViewController()
                 if (_playerViewController !== nil) {
-                    _playerDelegate = RCTPlayerDelegate(self.onPictureInPictureStatusChanged, self.onVideoFullscreenPlayerWillPresent, self.onVideoFullscreenPlayerWillDismiss)
+                    _playerDelegate = RCTPlayerDelegate(self.onPictureInPictureStatusChanged, self.onVideoFullscreenPlayerWillPresent, self.onVideoFullscreenPlayerWillDismiss, self.onVideoFullscreenPlayerDidDismiss)
                     _playerViewController!.delegate = _playerDelegate
                 }
             }
@@ -780,8 +780,8 @@ class RCTVideo: UIView, RCTVideoPlayerViewControllerDelegate, RCTPlayerObserverH
             _playerViewController = nil
             _playerObserver.playerViewController = nil
             self.applyModifiers()
-
-            onVideoFullscreenPlayerDidDismiss?(["target": reactTag as Any])
+            // Moved to RCTPlayerDelegate
+            // onVideoFullscreenPlayerDidDismiss?(["target": reactTag as Any])
         }
     }
 
