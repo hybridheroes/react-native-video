@@ -2,7 +2,7 @@ import AVKit
 
 class RCTVideoPlayerViewController: AVPlayerViewController {
     
-    var rctDelegate:RCTVideoPlayerViewControllerDelegate!
+    weak var rctDelegate: RCTVideoPlayerViewControllerDelegate?
     
     // Optional paramters
     var preferredOrientation:String?
@@ -18,22 +18,11 @@ class RCTVideoPlayerViewController: AVPlayerViewController {
         return false
     }
 
-    override func viewDidLoad() {
-        super.viewDidLoad()
-        NotificationCenter.default.addObserver(self, selector: #selector(deviceOrientationDidChange), name: UIDevice.orientationDidChangeNotification, object: nil)
-    }
-
-    deinit {
-        NotificationCenter.default.removeObserver(self, name: UIDevice.orientationDidChangeNotification, object: nil)
-    }
-
     override func viewDidDisappear(_ animated: Bool) {
         super.viewDidDisappear(animated)
 
-        if rctDelegate != nil {
-            rctDelegate.videoPlayerViewControllerWillDismiss(playerViewController: self)
-            rctDelegate.videoPlayerViewControllerDidDismiss(playerViewController: self)
-        }
+        rctDelegate?.videoPlayerViewControllerWillDismiss(playerViewController: self)
+        rctDelegate?.videoPlayerViewControllerDidDismiss(playerViewController: self)
     }
 
     #if !TARGET_OS_TV

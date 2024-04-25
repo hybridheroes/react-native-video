@@ -16,7 +16,6 @@ class RCTVideo: UIView, RCTVideoPlayerViewControllerDelegate, RCTPlayerObserverH
     private var _playerLayer:AVPlayerLayer?
 
     private var _playerViewController:RCTVideoPlayerViewController?
-    private var _playerDelegate:RCTPlayerDelegate?
     private var _videoURL:NSURL?
 
     /* DRM */
@@ -60,6 +59,7 @@ class RCTVideo: UIView, RCTVideoPlayerViewControllerDelegate, RCTPlayerObserverH
     private var _fullscreenAutorotate:Bool = true
     private var _fullscreenOrientation:String! = "all"
     private var _fullscreenPlayerPresented:Bool = false
+    private var _fullscreenUncontrolPlayerPresented:Bool = false // to call events switching full screen mode from player controls
     private var _filterName:String!
     private var _filterEnabled:Bool = false
     private var _presentingViewController:UIViewController?
@@ -100,7 +100,6 @@ class RCTVideo: UIView, RCTVideoPlayerViewControllerDelegate, RCTPlayerObserverH
     @objc var onVideoFullscreenPlayerDidPresent: RCTDirectEventBlock?
     @objc var onVideoFullscreenPlayerWillDismiss: RCTDirectEventBlock?
     @objc var onVideoFullscreenPlayerDidDismiss: RCTDirectEventBlock?
-    @objc var onVideoPlayerOrientationChange: RCTDirectEventBlock?
     @objc var onReadyForDisplay: RCTDirectEventBlock?
     @objc var onPlaybackStalled: RCTDirectEventBlock?
     @objc var onPlaybackResume: RCTDirectEventBlock?
@@ -175,6 +174,11 @@ class RCTVideo: UIView, RCTVideoPlayerViewControllerDelegate, RCTPlayerObserverH
     }
 
     @objc func applicationDidEnterBackground(notification:NSNotification!) {
+        if _playInBackground {
+            // Needed to play sound in background. See https://developer.apple.com/library/ios/qa/qa1668/_index.html
+            _playerLayer?.player = nil
+            _playerViewController?.player = nil
+        }
     }
 
     @objc func applicationWillEnterForeground(notification:NSNotification!) {
@@ -243,7 +247,8 @@ class RCTVideo: UIView, RCTVideoPlayerViewControllerDelegate, RCTPlayerObserverH
     // MARK: - Player and source
     @objc
     func setSrc(_ source:NSDictionary!) {
-        DispatchQueue.global(qos: .default).async {
+        DispatchQueue.global(qos: .default).async { [weak self] in
+            guard let self = self else {return}
             self._source = VideoSource(source)
             if (self._source?.uri == nil || self._source?.uri == "") {
                 self._player?.replaceCurrentItem(with: nil)
@@ -558,6 +563,10 @@ class RCTVideo: UIView, RCTVideoPlayerViewControllerDelegate, RCTPlayerObserverH
 
 
     func applyModifiers() {
+        if let video = _player?.currentItem,
+            video == nil || video.status != AVPlayerItem.Status.readyToPlay {
+            return
+        }
         if _muted {
             if !_controls {
                 _player?.volume = 0
@@ -663,7 +672,9 @@ class RCTVideo: UIView, RCTVideoPlayerViewControllerDelegate, RCTPlayerObserverH
                         // prevents crash https://github.com/react-native-video/react-native-video/issues/3040
                         self._playerViewController?.removeFromParent()
                     }
-                    viewController.present(playerViewController, animated:true, completion:{
+
+                    viewController.present(playerViewController, animated:true, completion:{ [weak self] in
+                        guard let self = self else {return}
                         self._playerViewController?.showsPlaybackControls = self._controls
                         self._fullscreenPlayerPresented = fullscreen
                         self._playerViewController?.autorotate = self._fullscreenAutorotate
@@ -675,8 +686,8 @@ class RCTVideo: UIView, RCTVideoPlayerViewControllerDelegate, RCTPlayerObserverH
             }
         } else if !fullscreen && _fullscreenPlayerPresented, let _playerViewController = _playerViewController {
             self.videoPlayerViewControllerWillDismiss(playerViewController: _playerViewController)
-            _presentingViewController?.dismiss(animated: true, completion:{
-                self.videoPlayerViewControllerDidDismiss(playerViewController: _playerViewController)
+            _presentingViewController?.dismiss(animated: true, completion:{[weak self] in
+                self?.videoPlayerViewControllerDidDismiss(playerViewController: _playerViewController)
             })
         }
     }
@@ -760,10 +771,6 @@ class RCTVideo: UIView, RCTVideoPlayerViewControllerDelegate, RCTPlayerObserverH
             {
                 self.removePlayerLayer()
                 self.usePlayerViewController()
-                if (_playerViewController !== nil) {
-                    _playerDelegate = RCTPlayerDelegate(self.onPictureInPictureStatusChanged, self.onVideoFullscreenPlayerWillPresent, self.onVideoFullscreenPlayerWillDismiss, self.onVideoFullscreenPlayerDidDismiss)
-                    _playerViewController!.delegate = _playerDelegate
-                }
             }
             else
             {
@@ -1110,12 +1117,27 @@ class RCTVideo: UIView, RCTVideoPlayerViewControllerDelegate, RCTPlayerObserverH
         let oldRect = change.oldValue
         let newRect = change.newValue
         if !oldRect!.equalTo(newRect!) {
+            // https://github.com/react-native-video/react-native-video/issues/3085#issuecomment-1557293391
             if newRect!.equalTo(UIScreen.main.bounds) {
                 RCTLog("in fullscreen")
+                if (!_fullscreenUncontrolPlayerPresented) {
+                    _fullscreenUncontrolPlayerPresented = true;
+
+                    self.onVideoFullscreenPlayerWillPresent?(["target": self.reactTag as Any])
+                    self.onVideoFullscreenPlayerDidPresent?(["target": self.reactTag as Any])
+                }
+            } else {
+                NSLog("not fullscreen")
+                if (_fullscreenUncontrolPlayerPresented) {
+                    _fullscreenUncontrolPlayerPresented = false;
+
+                    self.onVideoFullscreenPlayerWillDismiss?(["target": self.reactTag as Any])
+                    self.onVideoFullscreenPlayerDidDismiss?(["target": self.reactTag as Any])
+                }
+            }
 
                 self.reactViewController().view.frame = UIScreen.main.bounds
                 self.reactViewController().view.setNeedsLayout()
-            } else {NSLog("not fullscreen")}
         }
     }
 
