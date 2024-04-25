@@ -189,6 +189,12 @@ export default class Video extends Component {
     }
   };
 
+  _onOrientationChange = (event) => {
+    if (this.props.onOrientationChange) {
+      this.props.onOrientationChange(event.nativeEvent);
+    }
+  };
+
   _onFullscreenPlayerDidDismiss = (event) => {
     if (this.props.onFullscreenPlayerDidDismiss) {
       this.props.onFullscreenPlayerDidDismiss(event.nativeEvent);
@@ -364,6 +370,7 @@ export default class Video extends Component {
       onVideoFullscreenPlayerDidPresent: this._onFullscreenPlayerDidPresent,
       onVideoFullscreenPlayerWillDismiss: this._onFullscreenPlayerWillDismiss,
       onVideoFullscreenPlayerDidDismiss: this._onFullscreenPlayerDidDismiss,
+      onVideoPlayerOrientationChange: this._onOrientationChange,
       onReadyForDisplay: this._onReadyForDisplay,
       onPlaybackStalled: this._onPlaybackStalled,
       onPlaybackResume: this._onPlaybackResume,
@@ -551,6 +558,7 @@ Video.propTypes = {
   onFullscreenPlayerDidPresent: PropTypes.func,
   onFullscreenPlayerWillDismiss: PropTypes.func,
   onFullscreenPlayerDidDismiss: PropTypes.func,
+  onOrientationChange: PropTypes.func,
   onReadyForDisplay: PropTypes.func,
   onPlaybackStalled: PropTypes.func,
   onPlaybackResume: PropTypes.func,

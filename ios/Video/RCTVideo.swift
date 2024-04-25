@@ -26,7 +26,7 @@ class RCTVideo: UIView, RCTVideoPlayerViewControllerDelegate, RCTPlayerObserverH
 
     /* Required to publish events */
     private var _eventDispatcher:RCTEventDispatcher?
-private var _videoLoadStarted:Bool = false
+    private var _videoLoadStarted:Bool = false
 
     private var _pendingSeek:Bool = false
     private var _pendingSeekTime:Float = 0.0
