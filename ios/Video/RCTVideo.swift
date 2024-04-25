@@ -100,6 +100,7 @@ class RCTVideo: UIView, RCTVideoPlayerViewControllerDelegate, RCTPlayerObserverH
     @objc var onVideoFullscreenPlayerDidPresent: RCTDirectEventBlock?
     @objc var onVideoFullscreenPlayerWillDismiss: RCTDirectEventBlock?
     @objc var onVideoFullscreenPlayerDidDismiss: RCTDirectEventBlock?
+    @objc var onVideoPlayerOrientationChange: RCTDirectEventBlock?
     @objc var onReadyForDisplay: RCTDirectEventBlock?
     @objc var onPlaybackStalled: RCTDirectEventBlock?
     @objc var onPlaybackResume: RCTDirectEventBlock?
