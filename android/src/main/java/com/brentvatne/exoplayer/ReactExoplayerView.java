@@ -305,7 +305,9 @@ class ReactExoplayerView extends FrameLayout implements
     @Override
     protected void onAttachedToWindow() {
         super.onAttachedToWindow();
-        initializePlayer();
+        // uncommented `initializePlayer()`, because it caused video to restart when it is running
+        // behind another screen and the user navigated back to the screen where the video runs
+        // initializePlayer();
     }
 
     @Override
@@ -1497,7 +1499,8 @@ class ReactExoplayerView extends FrameLayout implements
                     DataSourceUtil.getDefaultDataSourceFactory(this.themedReactContext, bandwidthMeter,
                             this.requestHeaders);
 
-            if (!isSourceEqual) {
+            if (!isSourceEqual) {                
+                Log.d("PLAYER", "reload1");
                 reloadSource();
             }
         }
@@ -1537,6 +1540,7 @@ class ReactExoplayerView extends FrameLayout implements
             this.mediaDataSourceFactory = buildDataSourceFactory(true);
 
             if (!isSourceEqual) {
+                Log.d("PLAYER", "reload2");
                 reloadSource();
             }
         }
@@ -1544,6 +1548,7 @@ class ReactExoplayerView extends FrameLayout implements
 
     public void setTextTracks(ReadableArray textTracks) {
         this.textTracks = textTracks;
+        Log.d("PLAYER", "reload3");
         reloadSource();
     }
 

@@ -26,7 +26,7 @@ class RCTVideo: UIView, RCTVideoPlayerViewControllerDelegate, RCTPlayerObserverH
 
     /* Required to publish events */
     private var _eventDispatcher:RCTEventDispatcher?
-    private var _videoLoadStarted:Bool = false
+private var _videoLoadStarted:Bool = false
 
     private var _pendingSeek:Bool = false
     private var _pendingSeekTime:Float = 0.0
@@ -174,11 +174,6 @@ class RCTVideo: UIView, RCTVideoPlayerViewControllerDelegate, RCTPlayerObserverH
     }
 
     @objc func applicationDidEnterBackground(notification:NSNotification!) {
-        if _playInBackground {
-            // Needed to play sound in background. See https://developer.apple.com/library/ios/qa/qa1668/_index.html
-            _playerLayer?.player = nil
-            _playerViewController?.player = nil
-        }
     }
 
     @objc func applicationWillEnterForeground(notification:NSNotification!) {
@@ -659,10 +654,14 @@ class RCTVideo: UIView, RCTVideoPlayerViewControllerDelegate, RCTPlayerObserverH
             }
             if viewController != nil {
                 _presentingViewController = viewController
-
-                self.onVideoFullscreenPlayerWillPresent?(["target": reactTag as Any])
+                // Moved to RCTPlayerDelegate
+                // self.onVideoFullscreenPlayerWillPresent?(["target": reactTag as Any])
 
                 if let playerViewController = _playerViewController {
+                    if(_controls) {
+                        // prevents crash https://github.com/react-native-video/react-native-video/issues/3040
+                        self._playerViewController?.removeFromParent()
+                    }
                     viewController.present(playerViewController, animated:true, completion:{
                         self._playerViewController?.showsPlaybackControls = self._controls
                         self._fullscreenPlayerPresented = fullscreen
@@ -723,6 +722,7 @@ class RCTVideo: UIView, RCTVideoPlayerViewControllerDelegate, RCTPlayerObserverH
         viewController.showsPlaybackControls = self._controls
         viewController.rctDelegate = self
         viewController.preferredOrientation = _fullscreenOrientation
+        viewController.onVideoPlayerOrientationChange = self.onVideoPlayerOrientationChange
 
         viewController.view.frame = self.bounds
         viewController.player = player
@@ -759,6 +759,10 @@ class RCTVideo: UIView, RCTVideoPlayerViewControllerDelegate, RCTPlayerObserverH
             {
                 self.removePlayerLayer()
                 self.usePlayerViewController()
+                if (_playerViewController !== nil) {
+                    _playerDelegate = RCTPlayerDelegate(self.onPictureInPictureStatusChanged, self.onVideoFullscreenPlayerWillPresent, self.onVideoFullscreenPlayerWillDismiss, self.onVideoFullscreenPlayerDidDismiss)
+                    _playerViewController!.delegate = _playerDelegate
+                }
             }
             else
             {
@@ -787,7 +791,8 @@ class RCTVideo: UIView, RCTVideoPlayerViewControllerDelegate, RCTPlayerObserverH
     func videoPlayerViewControllerWillDismiss(playerViewController:AVPlayerViewController) {
         if _playerViewController == playerViewController && _fullscreenPlayerPresented, let onVideoFullscreenPlayerWillDismiss = onVideoFullscreenPlayerWillDismiss {
             _playerObserver.removePlayerViewControllerObservers()
-            onVideoFullscreenPlayerWillDismiss(["target": reactTag as Any])
+            // Moved to RCTPlayerDelegate
+            // onVideoFullscreenPlayerWillDismiss(["target": reactTag as Any])
         }
     }
 
@@ -799,8 +804,8 @@ class RCTVideo: UIView, RCTVideoPlayerViewControllerDelegate, RCTPlayerObserverH
             _playerViewController = nil
             _playerObserver.playerViewController = nil
             self.applyModifiers()
-
-            onVideoFullscreenPlayerDidDismiss?(["target": reactTag as Any])
+            // Moved to RCTPlayerDelegate
+            // onVideoFullscreenPlayerDidDismiss?(["target": reactTag as Any])
         }
     }
 
