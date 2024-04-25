@@ -74,6 +74,17 @@ Video with caching ([more info](docs/caching.md)):
 end
 ```
 
+#### Enable custom feature in podfile file
+
+##### Google IMA
+
+Google IMA is the google SDK to support Client Side Ads Integration (CSAI), see [google documentation](https://developers.google.com/interactive-media-ads/docs/sdks/ios/client-side) for more informations.
+
+To enable google IMA usage define add following line in your podfile:
+```podfile
+$RNVideoUseGoogleIMA=true
+```
+
 </details>
 
 ### tvOS installation
@@ -320,6 +331,7 @@ var styles = StyleSheet.create({
 | [selectedAudioTrack](#selectedaudiotrack)                                           | Android, iOS              |
 | [selectedTextTrack](#selectedtexttrack)                                             | Android, iOS              |
 | [selectedVideoTrack](#selectedvideotrack)                                           | Android                   |
+| [shutterColor](#shutterColor)                                                       | Android                   |
 | [source](#source)                                                                   | All                       |
 | [subtitleStyle](#subtitleStyle)                                                     | Android                   |
 | [textTracks](#texttracks)                                                           | Android, iOS              |
@@ -841,6 +853,17 @@ If a track matching the specified Type (and Value if appropriate) is unavailable
 
 Platforms: Android
 
+#### shutterColor
+Apply color to shutter view, if you see black flashes before video start then set 
+
+```
+shutterColor='transparent'
+```
+
+- black (default)
+
+Platforms: Android
+
 #### source
 Sets the media source. You can pass an asset loaded via require or an object with a uri.
 
@@ -915,6 +938,21 @@ type: 'mpd' }}
 The following other types are supported on some platforms, but aren't fully documented yet:
 `content://, ms-appx://, ms-appdata://, assets-library://`
 
+
+##### Playing only a portion of the video (start & end time)
+
+Provide an optional `startTime` and/or `endTime` for the video. Value is in milliseconds. Useful when you want to play only a portion of a large video.
+
+Example
+```
+source={{ uri: 'https://bitdash-a.akamaihd.net/content/sintel/hls/playlist.m3u8', startTime: 36012, endTime: 48500 }}
+
+source={{ uri: 'https://bitdash-a.akamaihd.net/content/sintel/hls/playlist.m3u8', startTime: 36012 }}
+
+source={{ uri: 'https://bitdash-a.akamaihd.net/content/sintel/hls/playlist.m3u8', endTime: 48500 }}
+```
+
+Platforms: iOS, Android
 
 #### subtitleStyle
 

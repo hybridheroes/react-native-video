@@ -1,9 +1,9 @@
 package com.brentvatne.exoplayer;
 
+import android.graphics.Color;
 import android.content.Context;
 import android.net.Uri;
 import android.text.TextUtils;
-import android.util.Log;
 
 import com.facebook.react.bridge.Dynamic;
 import com.facebook.react.bridge.ReadableArray;
@@ -13,7 +13,6 @@ import com.facebook.react.common.MapBuilder;
 import com.facebook.react.uimanager.ThemedReactContext;
 import com.facebook.react.uimanager.ViewGroupManager;
 import com.facebook.react.uimanager.annotations.ReactProp;
-import com.facebook.react.bridge.ReactMethod;
 import com.google.android.exoplayer2.util.Util;
 import com.google.android.exoplayer2.DefaultLoadControl;
 import com.google.android.exoplayer2.upstream.RawResourceDataSource;
@@ -28,9 +27,10 @@ import javax.annotation.Nullable;
 public class ReactExoplayerViewManager extends ViewGroupManager<ReactExoplayerView> {
 
     private static final String REACT_CLASS = "RCTVideo";
-
     private static final String PROP_SRC = "src";
     private static final String PROP_SRC_URI = "uri";
+    private static final String PROP_SRC_START_TIME = "startTime";
+    private static final String PROP_SRC_END_TIME = "endTime";
     private static final String PROP_AD_TAG_URL = "adTagUrl";
     private static final String PROP_SRC_TYPE = "type";
     private static final String PROP_DRM = "drm";
@@ -80,8 +80,8 @@ public class ReactExoplayerViewManager extends ViewGroupManager<ReactExoplayerVi
     private static final String PROP_SELECTED_VIDEO_TRACK_VALUE = "value";
     private static final String PROP_HIDE_SHUTTER_VIEW = "hideShutterView";
     private static final String PROP_CONTROLS = "controls";
-
     private static final String PROP_SUBTITLE_STYLE = "subtitleStyle";
+    private static final String PROP_SHUTTER_COLOR = "shutterColor";
 
     private ReactExoplayerConfig config;
 
@@ -152,6 +152,8 @@ public class ReactExoplayerViewManager extends ViewGroupManager<ReactExoplayerVi
     public void setSrc(final ReactExoplayerView videoView, @Nullable ReadableMap src) {
         Context context = videoView.getContext().getApplicationContext();
         String uriString = src.hasKey(PROP_SRC_URI) ? src.getString(PROP_SRC_URI) : null;
+        int startTimeMs = src.hasKey(PROP_SRC_START_TIME) ? src.getInt(PROP_SRC_START_TIME) : -1;
+        int endTimeMs = src.hasKey(PROP_SRC_END_TIME) ? src.getInt(PROP_SRC_END_TIME) : -1;
         String extension = src.hasKey(PROP_SRC_TYPE) ? src.getString(PROP_SRC_TYPE) : null;
         Map<String, String> headers = src.hasKey(PROP_SRC_HEADERS) ? toStringMap(src.getMap(PROP_SRC_HEADERS)) : null;
 
@@ -164,7 +166,7 @@ public class ReactExoplayerViewManager extends ViewGroupManager<ReactExoplayerVi
             Uri srcUri = Uri.parse(uriString);
 
             if (srcUri != null) {
-                videoView.setSrc(srcUri, extension, headers);
+                videoView.setSrc(srcUri, startTimeMs, endTimeMs, extension, headers);
             }
         } else {
             int identifier = context.getResources().getIdentifier(
@@ -373,6 +375,11 @@ public class ReactExoplayerViewManager extends ViewGroupManager<ReactExoplayerVi
     @ReactProp(name = PROP_SUBTITLE_STYLE)
     public void setSubtitleStyle(final ReactExoplayerView videoView, @Nullable final ReadableMap src) {
         videoView.setSubtitleStyle(SubtitleStyle.parse(src));
+    }
+
+    @ReactProp(name = PROP_SHUTTER_COLOR, customType = "Color")
+    public void setShutterColor(final ReactExoplayerView videoView, final Integer color) {
+        videoView.setShutterColor(color == null ? Color.BLACK : color);
     }
 
     @ReactProp(name = PROP_BUFFER_CONFIG)
