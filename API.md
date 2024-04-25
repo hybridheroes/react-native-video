@@ -74,6 +74,17 @@ Video with caching ([more info](docs/caching.md)):
 end
 ```
 
+#### Enable custom feature in podfile file
+
+##### Google IMA
+
+Google IMA is the google SDK to support Client Side Ads Integration (CSAI), see [google documentation](https://developers.google.com/interactive-media-ads/docs/sdks/ios/client-side) for more informations.
+
+To enable google IMA usage define add following line in your podfile:
+```podfile
+$RNVideoUseGoogleIMA=true
+```
+
 </details>
 
 ### tvOS installation
@@ -915,6 +926,21 @@ type: 'mpd' }}
 The following other types are supported on some platforms, but aren't fully documented yet:
 `content://, ms-appx://, ms-appdata://, assets-library://`
 
+
+##### Playing only a portion of the video (start & end time)
+
+Provide an optional `startTime` and/or `endTime` for the video. Value is in milliseconds. Useful when you want to play only a portion of a large video.
+
+Example
+```
+source={{ uri: 'https://bitdash-a.akamaihd.net/content/sintel/hls/playlist.m3u8', startTime: 36012, endTime: 48500 }}
+
+source={{ uri: 'https://bitdash-a.akamaihd.net/content/sintel/hls/playlist.m3u8', startTime: 36012 }}
+
+source={{ uri: 'https://bitdash-a.akamaihd.net/content/sintel/hls/playlist.m3u8', endTime: 48500 }}
+```
+
+Platforms: iOS, Android
 
 #### subtitleStyle
 
